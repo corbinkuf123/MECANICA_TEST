@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AutoPrecision — Taller Mecánico de Alto Rendimiento</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #0a0a0a;
+    --carbon: #111111;
+    --steel: #1a1a1a;
+    --smoke: #2a2a2a;
+    --muted: #888;
+    --light: #c8c8c8;
+    --white: #f5f5f0;
+    --red: #e01a1a;
+    --red-dark: #a81212;
+    --gold: #c9a227;
+    --gold-light: #e8bc3a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    overflow-x: hidden;
+  }
+
+  /* ─── CURSOR ─── */
+  body { cursor: none; }
+  #cursor {
+    width: 10px; height: 10px;
+    background: var(--red);
+    border-radius: 50%;
+    position: fixed; top: 0; left: 0;
+    pointer-events: none;
+    z-index: 9999;
+    transition: transform 0.1s ease;
+  }
+  #cursor-ring {
+    width: 36px; height: 36px;
+    border: 1px solid rgba(224,26,26,0.5);
+    border-radius: 50%;
+    position: fixed; top: 0; left: 0;
+    pointer-events: none;
+    z-index: 9998;
+    transition: all 0.15s ease;
+  }
+
+  /* ─── NAV ─── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    z-index: 1000;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 60px;
+    height: 72px;
+    background: rgba(10,10,10,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .nav-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 3px;
+    color: var(--white);
+    text-decoration: none;
+  }
+  .nav-logo span { color: var(--red); }
+  .nav-links { display: flex; gap: 40px; list-style: none; }
+  .nav-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--white); }
+  .nav-cta {
+    background: var(--red);
+    color: var(--white) !important;
+    padding: 10px 24px;
+    border-radius: 2px;
+    font-size: 12px !important;
+    letter-spacing: 2px;
+    transition: background 0.2s !important;
+  }
+  .nav-cta:hover { background: var(--red-dark) !important; color: var(--white) !important; }
+
+  /* ─── HERO ─── */
+  #hero {
+    height: 100vh;
+    min-height: 700px;
+    position: relative;
+    display: flex; align-items: flex-end;
+    padding: 0 60px 80px;
+    overflow: hidden;
+  }
+  .hero-bg {
+    position: absolute; inset: 0;
+    background:
+      linear-gradient(to right, rgba(10,10,10,0.95) 40%, rgba(10,10,10,0.3) 100%),
+      url('https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1800&q=80') center/cover no-repeat;
+  }
+  .hero-line {
+    position: absolute;
+    left: 0; top: 50%;
+    width: 220px; height: 2px;
+    background: var(--red);
+    transform: translateX(-100%);
+    animation: line-in 1s 0.5s cubic-bezier(0.22,1,0.36,1) forwards;
+  }
+  @keyframes line-in { to { transform: translateX(0); } }
+  .hero-content { position: relative; z-index: 2; max-width: 700px; }
+  .hero-eyebrow {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-bottom: 20px;
+    opacity: 0;
+    animation: fade-up 0.8s 0.3s ease forwards;
+  }
+  .hero-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(72px, 9vw, 130px);
+    line-height: 0.9;
+    letter-spacing: 2px;
+    color: var(--white);
+    opacity: 0;
+    animation: fade-up 0.8s 0.5s ease forwards;
+  }
+  .hero-title .stroke {
+    -webkit-text-stroke: 1px var(--white);
+    color: transparent;
+  }
+  .hero-title .accent { color: var(--red); }
+  .hero-sub {
+    margin-top: 28px;
+    font-size: 16px;
+    line-height: 1.7;
+    color: var(--light);
+    max-width: 460px;
+    opacity: 0;
+    animation: fade-up 0.8s 0.7s ease forwards;
+  }
+  .hero-actions {
+    margin-top: 40px;
+    display: flex; gap: 16px; align-items: center;
+    opacity: 0;
+    animation: fade-up 0.8s 0.9s ease forwards;
+  }
+  .btn-primary {
+    background: var(--red);
+    color: var(--white);
+    padding: 16px 36px;
+    border: none;
+    border-radius: 2px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: none;
+    text-decoration: none;
+    transition: background 0.2s, transform 0.2s;
+  }
+  .btn-primary:hover { background: var(--red-dark); transform: translateY(-2px); }
+  .btn-ghost {
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    text-decoration: none;
+    display: flex; align-items: center; gap: 10px;
+    transition: color 0.2s;
+  }
+  .btn-ghost:hover { color: var(--white); }
+  .btn-ghost-arrow {
+    width: 32px; height: 1px;
+    background: var(--muted);
+    position: relative;
+    transition: width 0.3s, background 0.2s;
+  }
+  .btn-ghost:hover .btn-ghost-arrow { width: 48px; background: var(--white); }
+  .btn-ghost-arrow::after {
+    content: '';
+    position: absolute; right: -1px; top: -3px;
+    width: 6px; height: 6px;
+    border-right: 1px solid currentColor;
+    border-top: 1px solid currentColor;
+    transform: rotate(45deg);
+  }
+
+  .hero-stats {
+    position: absolute;
+    right: 60px; bottom: 80px;
+    display: flex; gap: 48px;
+    z-index: 2;
+    opacity: 0;
+    animation: fade-up 0.8s 1.1s ease forwards;
+  }
+  .stat-item { text-align: center; }
+  .stat-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 48px;
+    color: var(--white);
+    line-height: 1;
+  }
+  .stat-num span { color: var(--red); }
+  .stat-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ─── MARQUEE ─── */
+  .marquee-section {
+    border-top: 1px solid rgba(255,255,255,0.06);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    background: var(--carbon);
+    overflow: hidden;
+    padding: 18px 0;
+  }
+  .marquee-track {
+    display: flex;
+    animation: marquee 22s linear infinite;
+    white-space: nowrap;
+  }
+  .marquee-item {
+    display: flex; align-items: center; gap: 40px;
+    padding: 0 40px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 15px;
+    letter-spacing: 4px;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+  .marquee-dot {
+    width: 5px; height: 5px;
+    background: var(--red);
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  /* ─── BRANDS ─── */
+  #marcas {
+    padding: 80px 60px;
+    background: var(--carbon);
+  }
+  .section-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-bottom: 48px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(255,255,255,0.08);
+  }
+  .brands-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 2px;
+  }
+  .brand-card {
+    background: var(--steel);
+    aspect-ratio: 16/9;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 10px;
+    border: 1px solid transparent;
+    transition: border-color 0.3s, background 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+  .brand-card:hover {
+    border-color: rgba(224,26,26,0.3);
+    background: var(--smoke);
+  }
+  .brand-logo-text {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 3px;
+    color: rgba(255,255,255,0.25);
+    transition: color 0.3s;
+  }
+  .brand-card:hover .brand-logo-text { color: rgba(255,255,255,0.7); }
+  .brand-years {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    color: rgba(255,255,255,0.2);
+    transition: color 0.3s;
+  }
+  .brand-card:hover .brand-years { color: var(--red); }
+
+  /* ─── SERVICES ─── */
+  #servicios {
+    padding: 120px 60px;
+    background: var(--black);
+  }
+  .section-header {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    align-items: end;
+    margin-bottom: 80px;
+  }
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(48px, 6vw, 80px);
+    line-height: 0.95;
+    letter-spacing: 1px;
+  }
+  .section-title .dim { color: rgba(255,255,255,0.2); }
+  .section-desc {
+    font-size: 15px;
+    line-height: 1.8;
+    color: var(--muted);
+    max-width: 380px;
+    align-self: end;
+  }
+  .services-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+  }
+  .service-card {
+    background: var(--carbon);
+    padding: 40px;
+    border: 1px solid rgba(255,255,255,0.04);
+    position: relative;
+    overflow: hidden;
+    transition: background 0.3s;
+    cursor: none;
+  }
+  .service-card::before {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--red);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s cubic-bezier(0.22,1,0.36,1);
+  }
+  .service-card:hover { background: var(--steel); }
+  .service-card:hover::before { transform: scaleX(1); }
+  .service-number {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 72px;
+    color: rgba(255,255,255,0.04);
+    line-height: 1;
+    margin-bottom: -20px;
+    transition: color 0.3s;
+  }
+  .service-card:hover .service-number { color: rgba(224,26,26,0.08); }
+  .service-icon {
+    font-size: 28px;
+    margin-bottom: 20px;
+  }
+  .service-name {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    font-weight: 400;
+    margin-bottom: 12px;
+    line-height: 1.2;
+  }
+  .service-desc {
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--muted);
+    margin-bottom: 24px;
+  }
+  .service-link {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--red);
+    text-decoration: none;
+    display: flex; align-items: center; gap: 8px;
+    transition: gap 0.2s;
+  }
+  .service-link:hover { gap: 16px; }
+
+  /* ─── PROCESS ─── */
+  #proceso {
+    padding: 120px 60px;
+    background: var(--carbon);
+  }
+  .process-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2px;
+    margin-top: 80px;
+  }
+  .process-step {
+    padding: 48px 32px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    position: relative;
+  }
+  .process-step-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 100px;
+    color: rgba(255,255,255,0.04);
+    line-height: 1;
+    position: absolute;
+    top: 20px; right: 20px;
+  }
+  .process-step-tag {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-bottom: 20px;
+  }
+  .process-step-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px;
+    letter-spacing: 1px;
+    margin-bottom: 16px;
+  }
+  .process-step-desc {
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--muted);
+  }
+
+  /* ─── SHOWCASE ─── */
+  #galeria {
+    padding: 0 60px 120px;
+    background: var(--black);
+  }
+  .gallery-title-row {
+    padding: 80px 0 48px;
+  }
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    grid-template-rows: 280px 280px;
+    gap: 3px;
+  }
+  .gallery-item {
+    position: relative;
+    overflow: hidden;
+    background: var(--steel);
+  }
+  .gallery-item:first-child { grid-row: 1 / 3; }
+  .gallery-img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s cubic-bezier(0.22,1,0.36,1), filter 0.4s;
+    filter: brightness(0.7) saturate(0.8);
+  }
+  .gallery-item:hover .gallery-img {
+    transform: scale(1.05);
+    filter: brightness(0.9) saturate(1);
+  }
+  .gallery-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(10,10,10,0.8) 0%, transparent 60%);
+    display: flex; align-items: flex-end;
+    padding: 24px;
+  }
+  .gallery-caption {
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    color: rgba(255,255,255,0.9);
+  }
+  .gallery-tag {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-bottom: 4px;
+  }
+
+  /* ─── TESTIMONIALS ─── */
+  #testimonios {
+    padding: 120px 60px;
+    background: var(--carbon);
+  }
+  .testimonials-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    margin-top: 80px;
+  }
+  .testimonial-card {
+    padding: 40px;
+    background: var(--steel);
+    border-top: 2px solid var(--red);
+    position: relative;
+  }
+  .testimonial-quote {
+    font-family: 'DM Serif Display', serif;
+    font-style: italic;
+    font-size: 17px;
+    line-height: 1.7;
+    color: var(--light);
+    margin-bottom: 32px;
+  }
+  .testimonial-stars {
+    color: var(--gold);
+    font-size: 14px;
+    letter-spacing: 2px;
+    margin-bottom: 16px;
+  }
+  .testimonial-author {
+    display: flex; align-items: center; gap: 14px;
+  }
+  .author-avatar {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: var(--smoke);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 16px;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+  .author-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--white);
+  }
+  .author-car {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  /* ─── CTA ─── */
+  #contacto {
+    padding: 140px 60px;
+    background: var(--black);
+    position: relative;
+    overflow: hidden;
+  }
+  .cta-bg-text {
+    position: absolute;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(120px, 18vw, 260px);
+    color: rgba(255,255,255,0.025);
+    bottom: -30px;
+    right: -20px;
+    letter-spacing: 8px;
+    pointer-events: none;
+    user-select: none;
+    line-height: 1;
+  }
+  .cta-content {
+    position: relative; z-index: 1;
+    max-width: 700px;
+  }
+  .cta-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(60px, 8vw, 110px);
+    line-height: 0.95;
+    letter-spacing: 1px;
+    margin-bottom: 32px;
+  }
+  .cta-title span { color: var(--red); }
+  .cta-sub {
+    font-size: 16px;
+    line-height: 1.7;
+    color: var(--muted);
+    margin-bottom: 48px;
+    max-width: 480px;
+  }
+  .cta-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    max-width: 560px;
+  }
+  .form-input {
+    background: var(--carbon);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: var(--white);
+    padding: 16px 20px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    border-radius: 2px;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+  }
+  .form-input::placeholder { color: var(--muted); }
+  .form-input:focus { border-color: rgba(224,26,26,0.5); }
+  .form-input.full { grid-column: 1 / -1; }
+  .form-select {
+    background: var(--carbon);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: var(--muted);
+    padding: 16px 20px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    border-radius: 2px;
+    outline: none;
+    appearance: none;
+    cursor: none;
+    transition: border-color 0.2s;
+    grid-column: 1 / -1;
+  }
+  .form-select:focus { border-color: rgba(224,26,26,0.5); }
+  .form-btn {
+    grid-column: 1 / -1;
+    background: var(--red);
+    color: var(--white);
+    border: none;
+    padding: 18px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    border-radius: 2px;
+    cursor: none;
+    transition: background 0.2s, transform 0.2s;
+  }
+  .form-btn:hover { background: var(--red-dark); transform: translateY(-2px); }
+
+  .cta-info {
+    margin-top: 56px;
+    display: flex; gap: 48px;
+  }
+  .info-item {
+    display: flex; align-items: flex-start; gap: 16px;
+  }
+  .info-icon {
+    width: 40px; height: 40px;
+    background: var(--carbon);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 2px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .info-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .info-value {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--white);
+  }
+
+  /* ─── FOOTER ─── */
+  footer {
+    padding: 48px 60px;
+    background: var(--carbon);
+    border-top: 1px solid rgba(255,255,255,0.06);
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    align-items: center;
+    gap: 40px;
+  }
+  .footer-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 24px;
+    letter-spacing: 3px;
+    color: var(--white);
+    text-decoration: none;
+    display: block;
+    margin-bottom: 8px;
+  }
+  .footer-logo span { color: var(--red); }
+  .footer-tagline {
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+  .footer-links {
+    display: flex; flex-wrap: wrap; gap: 20px 40px;
+    justify-content: center;
+    list-style: none;
+  }
+  .footer-links a {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .footer-links a:hover { color: var(--white); }
+  .footer-copy {
+    text-align: right;
+    font-size: 12px;
+    color: rgba(255,255,255,0.2);
+  }
+  .footer-copy span { color: var(--red); }
+
+  /* ─── SCROLL REVEAL ─── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(32px);
+    transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.22,1,0.36,1);
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ─── FLOATING BADGE ─── */
+  .trust-badge {
+    position: fixed;
+    bottom: 32px; right: 32px;
+    background: var(--carbon);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 4px;
+    padding: 14px 18px;
+    z-index: 100;
+    display: flex; align-items: center; gap: 12px;
+    font-size: 12px;
+    cursor: none;
+    animation: badge-in 0.6s 2s ease backwards;
+  }
+  .trust-badge-dot {
+    width: 8px; height: 8px;
+    background: #22c55e;
+    border-radius: 50%;
+    animation: pulse-green 2s infinite;
+    flex-shrink: 0;
+  }
+  @keyframes pulse-green {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  @keyframes badge-in {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .trust-badge-text {
+    color: var(--light);
+    font-weight: 400;
+  }
+  .trust-badge-text strong { color: var(--white); font-weight: 500; }
+</style>
+</head>
+<body>
+
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">AUTO<span>PRECISION</span></a>
+  <ul class="nav-links">
+    <li><a href="#servicios">Servicios</a></li>
+    <li><a href="#proceso">Proceso</a></li>
+    <li><a href="#galeria">Trabajos</a></li>
+    <li><a href="#testimonios">Clientes</a></li>
+    <li><a href="#contacto" class="nav-cta">Agendar cita</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-line"></div>
+  <div class="hero-content">
+    <p class="hero-eyebrow">Taller de Alto Rendimiento — Desde 1998</p>
+    <h1 class="hero-title">
+      MÁXIMA<br>
+      <span class="stroke">POTENCIA</span><br>
+      <span class="accent">TOTAL</span>
+    </h1>
+    <p class="hero-sub">Ingeniería de precisión para tu vehículo. Diagnóstico computarizado, mecánica de alto rendimiento y servicio de garantía extendida.</p>
+    <div class="hero-actions">
+      <a href="#contacto" class="btn-primary">Agendar cita</a>
+      <a href="#servicios" class="btn-ghost">
+        <span class="btn-ghost-arrow"></span>
+        Ver servicios
+      </a>
+    </div>
+  </div>
+  <div class="hero-stats">
+    <div class="stat-item">
+      <div class="stat-num">12<span>K</span></div>
+      <div class="stat-label">Vehículos reparados</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">26</div>
+      <div class="stat-label">Años de experiencia</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">4<span>.9</span></div>
+      <div class="stat-label">Calificación Google</div>
+    </div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-section">
+  <div class="marquee-track">
+    <div class="marquee-item"><span class="marquee-dot"></span>DIAGNÓSTICO COMPUTARIZADO</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>MECÁNICA PREVENTIVA</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>FRENOS ABS</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>MOTOR Y TRANSMISIÓN</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>ALINEACIÓN Y BALANCEO</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>SUSPENSIÓN</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>SISTEMA ELÉCTRICO</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>GARANTÍA EN TODOS LOS TRABAJOS</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>DIAGNÓSTICO COMPUTARIZADO</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>MECÁNICA PREVENTIVA</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>FRENOS ABS</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>MOTOR Y TRANSMISIÓN</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>ALINEACIÓN Y BALANCEO</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>SUSPENSIÓN</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>SISTEMA ELÉCTRICO</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>GARANTÍA EN TODOS LOS TRABAJOS</div>
+  </div>
+</div>
+
+<!-- MARCAS -->
+<section id="marcas">
+  <div class="section-label">Marcas que atendemos</div>
+  <div class="brands-grid">
+    <div class="brand-card"><div class="brand-logo-text">TOYOTA</div><div class="brand-years">Especialistas certificados</div></div>
+    <div class="brand-card"><div class="brand-logo-text">BMW</div><div class="brand-years">Diagnóstico oficial</div></div>
+    <div class="brand-card"><div class="brand-logo-text">FORD</div><div class="brand-years">25+ años</div></div>
+    <div class="brand-card"><div class="brand-logo-text">HONDA</div><div class="brand-years">Motor & transmisión</div></div>
+    <div class="brand-card"><div class="brand-logo-text">CHEVROLET</div><div class="brand-years">Repuestos originales</div></div>
+    <div class="brand-card"><div class="brand-logo-text">NISSAN</div><div class="brand-years">Servicio completo</div></div>
+    <div class="brand-card"><div class="brand-logo-text">KIA</div><div class="brand-years">Garantía de fábrica</div></div>
+    <div class="brand-card"><div class="brand-logo-text">HYUNDAI</div><div class="brand-years">Tec. avanzada</div></div>
+    <div class="brand-card"><div class="brand-logo-text">MERCEDES</div><div class="brand-years">Lujo y precisión</div></div>
+    <div class="brand-card"><div class="brand-logo-text">AUDI</div><div class="brand-years">Performance</div></div>
+    <div class="brand-card"><div class="brand-logo-text">VOLKSWAGEN</div><div class="brand-years">Reparaciones completas</div></div>
+    <div class="brand-card"><div class="brand-logo-text">MITSUBISHI</div><div class="brand-years">Repuestos originales</div></div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section id="servicios">
+  <div class="section-header reveal">
+    <h2 class="section-title">
+      NUESTROS<br>
+      <span class="dim">SERVICIOS</span>
+    </h2>
+    <p class="section-desc">Contamos con tecnología de diagnóstico de última generación y técnicos certificados con más de 15 años de experiencia en cada especialidad.</p>
+  </div>
+  <div class="services-grid reveal">
+    <div class="service-card">
+      <div class="service-number">01</div>
+      <div class="service-icon">🔧</div>
+      <h3 class="service-name">Diagnóstico<br>Computarizado</h3>
+      <p class="service-desc">Lectura de códigos OBD-II, análisis de sensores en tiempo real y reporte completo del estado del vehículo. Detectamos fallas invisibles.</p>
+      <a href="#contacto" class="service-link">Agendar → </a>
+    </div>
+    <div class="service-card">
+      <div class="service-number">02</div>
+      <div class="service-icon">⚙️</div>
+      <h3 class="service-name">Motor y<br>Transmisión</h3>
+      <p class="service-desc">Reconstrucción de motores, cambio de embrague, cajas automáticas y manuales. Garantía de 6 meses en todos los trabajos de motor.</p>
+      <a href="#contacto" class="service-link">Agendar → </a>
+    </div>
+    <div class="service-card">
+      <div class="service-number">03</div>
+      <div class="service-icon">🛞</div>
+      <h3 class="service-name">Frenos y<br>Suspensión</h3>
+      <p class="service-desc">Sistema ABS, frenos de disco y tambor, amortiguadores, rótulas y ballestas. Frenado y manejo de precisión garantizados.</p>
+      <a href="#contacto" class="service-link">Agendar → </a>
+    </div>
+    <div class="service-card">
+      <div class="service-number">04</div>
+      <div class="service-icon">⚡</div>
+      <h3 class="service-name">Sistema<br>Eléctrico</h3>
+      <p class="service-desc">Instalación de alarmas, reparación de alternadores, baterías, sensores y sistema de inyección electrónica con equipos especializados.</p>
+      <a href="#contacto" class="service-link">Agendar → </a>
+    </div>
+    <div class="service-card">
+      <div class="service-number">05</div>
+      <div class="service-icon">🎯</div>
+      <h3 class="service-name">Alineación y<br>Balanceo 3D</h3>
+      <p class="service-desc">Tecnología Hunter 3D para una alineación milimétrica. Prolonga la vida de tus llantas y mejora el control de tu vehículo notablemente.</p>
+      <a href="#contacto" class="service-link">Agendar → </a>
+    </div>
+    <div class="service-card">
+      <div class="service-number">06</div>
+      <div class="service-icon">🛡️</div>
+      <h3 class="service-name">Mantenimiento<br>Preventivo</h3>
+      <p class="service-desc">Cambio de aceite, filtros, bujías, líquidos y revisión de 60 puntos. Mantén tu vehículo en óptimas condiciones todo el año.</p>
+      <a href="#contacto" class="service-link">Agendar → </a>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section id="proceso">
+  <div class="section-label reveal">Cómo trabajamos</div>
+  <div class="reveal">
+    <h2 class="section-title">EL PROCESO<br><span class="dim">AUTOPRECISION</span></h2>
+  </div>
+  <div class="process-grid">
+    <div class="process-step reveal">
+      <div class="process-step-num">1</div>
+      <div class="process-step-tag">Paso uno</div>
+      <h3 class="process-step-title">INGRESO Y RECEPCIÓN</h3>
+      <p class="process-step-desc">Tu vehículo es recibido y registrado digitalmente. Tomamos fotos del estado actual y asignamos un técnico responsable de inicio a fin.</p>
+    </div>
+    <div class="process-step reveal">
+      <div class="process-step-num">2</div>
+      <div class="process-step-tag">Paso dos</div>
+      <h3 class="process-step-title">DIAGNÓSTICO PRECISO</h3>
+      <p class="process-step-desc">Escáner OBD profesional más inspección visual completa. Te entregamos un informe detallado con fotografías y prioridad de cada falla.</p>
+    </div>
+    <div class="process-step reveal">
+      <div class="process-step-num">3</div>
+      <div class="process-step-tag">Paso tres</div>
+      <h3 class="process-step-title">COTIZACIÓN TRANSPARENTE</h3>
+      <p class="process-step-desc">Recibes una cotización clara, sin costos ocultos. Apruebas cada ítem antes de que iniciemos el trabajo. Tú tienes el control.</p>
+    </div>
+    <div class="process-step reveal">
+      <div class="process-step-num">4</div>
+      <div class="process-step-tag">Paso cuatro</div>
+      <h3 class="process-step-title">ENTREGA Y GARANTÍA</h3>
+      <p class="process-step-desc">Prueba de ruta antes de entregarte el vehículo. Garantía escrita en todos los trabajos y seguimiento post-servicio de 30 días.</p>
+    </div>
+  </div>
+</section>
+
+<!-- GALLERY -->
+<section id="galeria">
+  <div class="gallery-title-row reveal">
+    <div class="section-label">Trabajos realizados</div>
+    <h2 class="section-title">NUESTROS<br><span class="dim">MEJORES TRABAJOS</span></h2>
+  </div>
+  <div class="gallery-grid reveal">
+    <div class="gallery-item">
+      <img class="gallery-img" src="https://images.unsplash.com/photo-1625047509248-ec889cbff17f?w=900&q=80" alt="Motor de alto rendimiento" loading="lazy">
+      <div class="gallery-overlay">
+        <div>
+          <div class="gallery-tag">Motor</div>
+          <div class="gallery-caption">Reconstrucción de motor 2.0T — BMW Serie 3</div>
+        </div>
+      </div>
+    </div>
+    <div class="gallery-item">
+      <img class="gallery-img" src="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=600&q=80" alt="Vehículo de lujo" loading="lazy">
+      <div class="gallery-overlay">
+        <div>
+          <div class="gallery-tag">Diagnóstico</div>
+          <div class="gallery-caption">Revisión completa — Mercedes E300</div>
+        </div>
+      </div>
+    </div>
+    <div class="gallery-item">
+      <img class="gallery-img" src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=600&q=80" alt="Auto deportivo" loading="lazy">
+      <div class="gallery-overlay">
+        <div>
+          <div class="gallery-tag">Performance</div>
+          <div class="gallery-caption">Tune-up y afinación — Porsche 911</div>
+        </div>
+      </div>
+    </div>
+    <div class="gallery-item">
+      <img class="gallery-img" src="https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=600&q=80" alt="Taller mecánico" loading="lazy">
+      <div class="gallery-overlay">
+        <div>
+          <div class="gallery-tag">Suspensión</div>
+          <div class="gallery-caption">Sistema de suspensión — Toyota Hilux</div>
+        </div>
+      </div>
+    </div>
+    <div class="gallery-item">
+      <img class="gallery-img" src="https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=600&q=80" alt="Detalle de motor" loading="lazy">
+      <div class="gallery-overlay">
+        <div>
+          <div class="gallery-tag">Eléctrico</div>
+          <div class="gallery-caption">Sistema eléctrico — Audi A4</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section id="testimonios">
+  <div class="section-label reveal">Lo que dicen nuestros clientes</div>
+  <div class="reveal">
+    <h2 class="section-title">MÁS DE 12,000<br><span class="dim">CLIENTES SATISFECHOS</span></h2>
+  </div>
+  <div class="testimonials-grid reveal">
+    <div class="testimonial-card">
+      <div class="testimonial-stars">★★★★★</div>
+      <p class="testimonial-quote">"Llevé mi BMW con un problema que otros talleres no pudieron resolver. En AutoPrecision lo diagnosticaron en 20 minutos y al día siguiente ya estaba listo. Impresionante."</p>
+      <div class="testimonial-author">
+        <div class="author-avatar">CA</div>
+        <div>
+          <div class="author-name">Carlos Aguirre</div>
+          <div class="author-car">BMW 320i · Cliente desde 2019</div>
+        </div>
+      </div>
+    </div>
+    <div class="testimonial-card">
+      <div class="testimonial-stars">★★★★★</div>
+      <p class="testimonial-quote">"Lo que más valoro es la transparencia. Me mostraron fotos de cada pieza reemplazada y el trabajo fue exactamente lo que cotizaron. Cero sorpresas. Así debería ser siempre."</p>
+      <div class="testimonial-author">
+        <div class="author-avatar">MR</div>
+        <div>
+          <div class="author-name">María Rivas</div>
+          <div class="author-car">Toyota RAV4 · Cliente desde 2021</div>
+        </div>
+      </div>
+    </div>
+    <div class="testimonial-card">
+      <div class="testimonial-stars">★★★★★</div>
+      <p class="testimonial-quote">"Tengo 3 camionetas de trabajo y todas las traigo aquí. El servicio preventivo me ha ahorrado mucho dinero. Jamás me han fallado y el seguimiento post-servicio es excelente."</p>
+      <div class="testimonial-author">
+        <div class="author-avatar">JP</div>
+        <div>
+          <div class="author-name">Jorge Palomino</div>
+          <div class="author-car">Flota empresarial · Cliente desde 2016</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA / CONTACT -->
+<section id="contacto">
+  <div class="cta-bg-text">SERVICIO</div>
+  <div class="cta-content reveal">
+    <div class="section-label">Agenda tu cita</div>
+    <h2 class="cta-title">TU AUTO<br>NOS <span>IMPORTA</span></h2>
+    <p class="cta-sub">Llena el formulario y te contactamos en menos de 2 horas. Diagnóstico inicial sin costo en tu primera visita.</p>
+    <div class="cta-form">
+      <input class="form-input" type="text" placeholder="Tu nombre completo">
+      <input class="form-input" type="tel" placeholder="Teléfono / WhatsApp">
+      <input class="form-input full" type="text" placeholder="Marca y modelo de tu vehículo">
+      <select class="form-select">
+        <option value="" disabled selected>¿Qué servicio necesitas?</option>
+        <option>Diagnóstico computarizado</option>
+        <option>Motor y transmisión</option>
+        <option>Frenos y suspensión</option>
+        <option>Sistema eléctrico</option>
+        <option>Alineación y balanceo 3D</option>
+        <option>Mantenimiento preventivo</option>
+        <option>Otro — describir en WhatsApp</option>
+      </select>
+      <button class="form-btn" onclick="alert('¡Mensaje enviado! Te contactaremos pronto.')">Solicitar cita →</button>
+    </div>
+    <div class="cta-info reveal">
+      <div class="info-item">
+        <div class="info-icon">📍</div>
+        <div>
+          <div class="info-label">Dirección</div>
+          <div class="info-value">Av. Industrial 247, Lima</div>
+        </div>
+      </div>
+      <div class="info-item">
+        <div class="info-icon">📞</div>
+        <div>
+          <div class="info-label">Teléfono</div>
+          <div class="info-value">+51 987 654 321</div>
+        </div>
+      </div>
+      <div class="info-item">
+        <div class="info-icon">🕐</div>
+        <div>
+          <div class="info-label">Horario</div>
+          <div class="info-value">Lun–Sáb 7:30am – 6pm</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div>
+    <a href="#" class="footer-logo">AUTO<span>PRECISION</span></a>
+    <p class="footer-tagline">Taller de Alto Rendimiento — Lima, Perú</p>
+  </div>
+  <ul class="footer-links">
+    <li><a href="#servicios">Servicios</a></li>
+    <li><a href="#proceso">Proceso</a></li>
+    <li><a href="#galeria">Trabajos</a></li>
+    <li><a href="#testimonios">Clientes</a></li>
+    <li><a href="#contacto">Contacto</a></li>
+  </ul>
+  <p class="footer-copy">© 2024 AutoPrecision.<br>Hecho con <span>♥</span> en Lima.</p>
+</footer>
+
+<!-- TRUST BADGE -->
+<div class="trust-badge">
+  <div class="trust-badge-dot"></div>
+  <div class="trust-badge-text"><strong>Taller abierto</strong> · Lun–Sáb 7:30am</div>
+</div>
+
+<script>
+  // Custom cursor
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursor-ring');
+  let mouseX = 0, mouseY = 0, ringX = 0, ringY = 0;
+  document.addEventListener('mousemove', e => {
+    mouseX = e.clientX; mouseY = e.clientY;
+    cursor.style.left = mouseX - 5 + 'px';
+    cursor.style.top = mouseY - 5 + 'px';
+  });
+  function animateRing() {
+    ringX += (mouseX - ringX - 18) * 0.12;
+    ringY += (mouseY - ringY - 18) * 0.12;
+    ring.style.left = ringX + 'px';
+    ring.style.top = ringY + 'px';
+    requestAnimationFrame(animateRing);
+  }
+  animateRing();
+  document.querySelectorAll('a, button, .service-card, .brand-card').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+      cursor.style.transform = 'scale(2.5)';
+      ring.style.transform = 'scale(1.5)';
+      ring.style.borderColor = 'rgba(224,26,26,0.8)';
+    });
+    el.addEventListener('mouseleave', () => {
+      cursor.style.transform = 'scale(1)';
+      ring.style.transform = 'scale(1)';
+      ring.style.borderColor = 'rgba(224,26,26,0.5)';
+    });
+  });
+
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 60);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
+  reveals.forEach(el => observer.observe(el));
+
+  // Nav scroll effect
+  const nav = document.querySelector('nav');
+  window.addEventListener('scroll', () => {
+    nav.style.borderBottomColor = window.scrollY > 50
+      ? 'rgba(224,26,26,0.15)' : 'rgba(255,255,255,0.06)';
+  });
+</script>
+</body>
+</html>
